@@ -3,10 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net4.8</TargetFramework>
     <LangVersion>10</LangVersion>
-    <PackageId>ToasterCrispyShadows</PackageId>
-    <Authors>ToasterCrispyShadows</Authors>
-    <Company>ToasterCrispyShadows</Company>
-    <Product>ToasterCrispyShadows</Product>
+    <PackageId>ToasterPuckFX</PackageId>
+    <Authors>ToasterPuckFX</Authors>
+    <Company>ToasterPuckFX</Company>
+    <Product>ToasterPuckFX</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,7 +33,7 @@
   <!-- Streamline development and move the built .dll to the plugins folder after building -->
   <Target Name="PostBuildMoveDll" AfterTargets="Build">
     <PropertyGroup>
-      <TargetDir>C:\Program Files (x86)\Steam\steamapps\common\Puck\Plugins\ToasterCrispyShadows</TargetDir>
+      <TargetDir>C:\Program Files (x86)\Steam\steamapps\common\Puck\Plugins\ToasterDev</TargetDir>
     </PropertyGroup>
 
     <MakeDir Directories="$(TargetDir)" />

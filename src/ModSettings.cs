@@ -1,12 +1,34 @@
 ﻿using System.IO;
 using System.Text.Json;
 
-namespace ToasterCrispyShadows;
+namespace ToasterPuckFX;
 
 public class ModSettings
 {
-    public float ShadowDistance { get; set; } = 50f;
-    public int   ShadowResolution { get; set; } = 8192;
+    public float VerticalityLineR { get; set; } = 0f;
+    public float VerticalityLineG { get; set; } = 0f;
+    public float VerticalityLineB { get; set; } = 0f;
+    public float VerticalityLineA { get; set; } = 0.8f;
+    public float VerticalityLineStartA { get; set; } = 0.5f;
+    public float VerticalityLineEndA { get; set; } = 1f;
+
+    public float ElevationIndicatorR { get; set; } = 0f;
+    public float ElevationIndicatorG { get; set; } = 0f;
+    public float ElevationIndicatorB { get; set; } = 0f;
+    public float ElevationIndicatorA { get; set; } = 1f;    
+    
+    public float PuckOutlineR { get; set; } = 1f;
+    public float PuckOutlineG { get; set; } = 1f;
+    public float PuckOutlineB { get; set; } = 1f;
+    public int PuckOutlineKernelSize { get; set; } = 1;
+
+    public bool PuckTrailEnabled { get; set; } = false;
+    public float PuckTrailStartWidth { get; set; } = 0.1f;
+    public float PuckTrailEndWidth { get; set; } = 0f;
+    public float PuckTrailLifetimeSeconds { get; set; } = 0.6f;
+    public float PuckTrailColorR { get; set; } = 0f;
+    public float PuckTrailColorG { get; set; } = 0f;
+    public float PuckTrailColorB { get; set; } = 0f;
 
     static string ConfigurationFileName = $"{Plugin.MOD_NAME}.json";
 

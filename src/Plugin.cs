@@ -4,13 +4,13 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace ToasterCrispyShadows;
+namespace ToasterPuckFX;
 
 public class Plugin : IPuckMod
 {
-    public static string MOD_NAME = "ToasterCrispyShadows";
+    public static string MOD_NAME = "ToasterPuckFX";
     public static string MOD_VERSION = "1.0.0";
-    public static string MOD_GUID = "pw.stellaric.toaster.crispyshadows";
+    public static string MOD_GUID = "pw.stellaric.toaster.puckfx";
 
     static readonly Harmony harmony = new Harmony(MOD_GUID);
 
@@ -30,12 +30,12 @@ public class Plugin : IPuckMod
             {
                 Plugin.Log("Environment: client.");
                 modSettings = ModSettings.Load();
-                Shadows.UpdateShadows();
-                // Plugin.Log("Patching methods...");
-                
-                // harmony.PatchAll();
-                // Plugin.Log($"All patched! Patched methods:");
-                // LogAllPatchedMethods();
+                modSettings.Save(); // So that it writes any missing config values immediately
+                Plugin.Log("Patching methods...");
+                harmony.PatchAll();
+                Plugin.Log($"All patched! Patched methods:");
+                LogAllPatchedMethods();
+                PuckEffects.SetupPuckOutlineSettings();
             }
             
             Plugin.Log($"Enabled!");
@@ -54,6 +54,7 @@ public class Plugin : IPuckMod
         {
             Plugin.Log($"Disabling...");
             harmony.UnpatchSelf();
+            // modSettings.Save(); // Don't do this because we aren't modifying these values in runtime, it'll overwrite changes people make to the config file while the game is open
 
             Plugin.Log($"Disabled! Goodbye!");
             return true;
