@@ -3,10 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net4.8</TargetFramework>
     <LangVersion>10</LangVersion>
-    <PackageId>ToasterPuckFX</PackageId>
-    <Authors>ToasterPuckFX</Authors>
-    <Company>ToasterPuckFX</Company>
-    <Product>ToasterPuckFX</Product>
+    <PackageId>ToasterQuickChatPlus</PackageId>
+    <Authors>ToasterQuickChatPlus</Authors>
+    <Company>ToasterQuickChatPlus</Company>
+    <Product>ToasterQuickChatPlus</Product>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,37 +1,96 @@
 ﻿using System.IO;
 using System.Text.Json;
 
-namespace ToasterPuckFX;
+namespace ToasterQuickChatPlus;
 
 public class ModSettings
 {
-    public float VerticalityLineR { get; set; } = 0f;
-    public float VerticalityLineG { get; set; } = 0f;
-    public float VerticalityLineB { get; set; } = 0f;
-    public float VerticalityLineA { get; set; } = 0.8f;
-    public float VerticalityLineStartA { get; set; } = 0.5f;
-    public float VerticalityLineEndA { get; set; } = 1f;
+    public string BindingQuickchat5 { get; set; } = "<keyboard>/5";
+    public string BindingQuickchat6 { get; set; } = "<keyboard>/6";
+    public string BindingQuickchat7 { get; set; } = "<keyboard>/7";
+    public string BindingQuickchat8 { get; set; } = "<keyboard>/8";
+    public string BindingQuickchat9 { get; set; } = "<keyboard>/9";
+    public string BindingQuickchat0 { get; set; } = "<keyboard>/0";
+    public string BindingQuickchatEscape { get; set; } = "<keyboard>/escape";
 
-    public float ElevationIndicatorR { get; set; } = 0f;
-    public float ElevationIndicatorG { get; set; } = 0f;
-    public float ElevationIndicatorB { get; set; } = 0f;
-    public float ElevationIndicatorA { get; set; } = 1f;    
-    
-    public float PuckOutlineR { get; set; } = 1f;
-    public float PuckOutlineG { get; set; } = 1f;
-    public float PuckOutlineB { get; set; } = 1f;
-    public int PuckOutlineKernelSize { get; set; } = 1;
+    public QuickChatSettings[] quickChatSettings { get; set; }
 
-    public bool PuckTrailEnabled { get; set; } = false;
-    public float PuckTrailStartWidth { get; set; } = 0.1f;
-    public float PuckTrailEndWidth { get; set; } = 0f;
-    public float PuckTrailLifetimeSeconds { get; set; } = 0.6f;
-    public float PuckTrailColorR { get; set; } = 0f;
-    public float PuckTrailColorG { get; set; } = 0f;
-    public float PuckTrailColorB { get; set; } = 0f;
+    public class QuickChatSettings
+    {
+        public int index { get; set; } = 0;
+        public int visibility { get; set; } = 0;
+    }
 
     static string ConfigurationFileName = $"{Plugin.MOD_NAME}.json";
 
+    public ModSettings()
+    {
+        (int idx, int visibility)[] slotDefaults = new (int, int)[]
+        {
+            // Menu 1
+            (0, 1),  // slot 00 → chat 0 | all-chat 0 / team 1
+            (1, 1),
+            (2, 1),
+            (3, 1), // #4
+            // Menu 2
+            (4, 0),
+            (5, 0),
+            (6, 0), 
+            (7, 0),
+            // Menu 3
+            (8, 0),
+            (9, 0),
+            (10, 0),
+            (11, 0),
+            // Menu 4
+            (12, 0),
+            (13, 0),
+            (14, 0),
+            (15, 0),
+            // end of defaults
+            // Menu 5 - end of game
+            (62, 0),
+            (64, 0),
+            (66, 0),
+            (65, 0),
+            // Menu 6
+            (16, 0),
+            (19, 0),
+            (21, 0),
+            (22, 0),
+            // Menu 7
+            (58, 0),
+            (61, 0),
+            (30, 0),
+            (28, 0),
+            // Menu 8
+            (40, 1),
+            (41, 1),
+            (46, 1),
+            (45, 0),
+            // Menu 9
+            (51, 0),
+            (37, 0),
+            (35, 0),
+            (34, 0),
+            // Menu 0 - silly
+            (57, 0),
+            (56, 0),
+            (17, 0),
+            (18, 0),
+        };
+        
+        quickChatSettings = new QuickChatSettings[slotDefaults.Length];
+        for (int i = 0; i < slotDefaults.Length; i++)
+        {
+            quickChatSettings[i] = new QuickChatSettings
+            {
+                index = slotDefaults[i].idx,
+                visibility = slotDefaults[i].visibility
+            };
+        }
+    }
+    
     public static ModSettings Load()
     {
         var path = GetConfigPath();
@@ -52,7 +111,8 @@ public class ModSettings
                 var settings = JsonSerializer.Deserialize<ModSettings>(json,
                     new JsonSerializerOptions
                     {
-                        PropertyNameCaseInsensitive = true
+                        PropertyNameCaseInsensitive = true,
+                        IncludeFields               = true
                     });
                 return settings ?? new ModSettings();
             }
@@ -67,7 +127,8 @@ public class ModSettings
         File.WriteAllText(path,
             JsonSerializer.Serialize(defaults, new JsonSerializerOptions
             {
-                WriteIndented = true
+                WriteIndented = true,
+                IncludeFields               = true
             }));
                 
         Plugin.Log($"Config file `{path}` did not exist, created with defaults.");
@@ -85,8 +146,10 @@ public class ModSettings
         File.WriteAllText(path,
             JsonSerializer.Serialize(this, new JsonSerializerOptions
             {
-                WriteIndented = true
+                WriteIndented = true,
+                IncludeFields               = true
             }));
+        Plugin.Log($"Saved config file to {path}");
     }
 
     public static string GetConfigPath()

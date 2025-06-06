@@ -1,20 +1,30 @@
 ﻿using System;
 using System.Linq;
 using HarmonyLib;
+using ToasterQuickChatPlus.ui;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
-namespace ToasterPuckFX;
+namespace ToasterQuickChatPlus;
 
 public class Plugin : IPuckMod
 {
-    public static string MOD_NAME = "ToasterPuckFX";
+    public static string MOD_NAME = "ToasterQuickChatPlus";
     public static string MOD_VERSION = "1.0.0";
-    public static string MOD_GUID = "pw.stellaric.toaster.puckfx";
+    public static string MOD_GUID = "pw.stellaric.toaster.quickchatplus";
 
     static readonly Harmony harmony = new Harmony(MOD_GUID);
 
     public static ModSettings modSettings;
+    
+    public static InputAction quickchat5Action;
+    public static InputAction quickchat6Action;
+    public static InputAction quickchat7Action;
+    public static InputAction quickchat8Action;
+    public static InputAction quickchat9Action;
+    public static InputAction quickchat0Action;
+    public static InputAction quickchatCloseAction;
 
     public bool OnEnable()
     {
@@ -35,7 +45,25 @@ public class Plugin : IPuckMod
                 harmony.PatchAll();
                 Plugin.Log($"All patched! Patched methods:");
                 LogAllPatchedMethods();
-                PuckEffects.SetupPuckOutlineSettings();
+                
+                // register keybinds
+                quickchat5Action = new InputAction(binding: modSettings.BindingQuickchat5);
+                quickchat5Action.Enable();
+                quickchat6Action = new InputAction(binding: modSettings.BindingQuickchat6);
+                quickchat6Action.Enable();
+                quickchat7Action = new InputAction(binding: modSettings.BindingQuickchat7);
+                quickchat7Action.Enable();
+                quickchat8Action = new InputAction(binding: modSettings.BindingQuickchat8);
+                quickchat8Action.Enable();
+                quickchat9Action = new InputAction(binding: modSettings.BindingQuickchat9);
+                quickchat9Action.Enable();
+                quickchat0Action = new InputAction(binding: modSettings.BindingQuickchat0);
+                quickchat0Action.Enable();
+                quickchatCloseAction = new InputAction(binding: modSettings.BindingQuickchatEscape);
+                quickchatCloseAction.Enable();
+
+                QuickChatPatch.Setup();
+                MainMenu.Setup();
             }
             
             Plugin.Log($"Enabled!");
