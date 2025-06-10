@@ -15,8 +15,10 @@ public static class MainMenuQuickChatSettings
         if (rootContainer == null) Create();
         rootContainer.visible = true;
         rootContainer.enabledSelf = true;
+        rootContainer.style.display = DisplayStyle.Flex;
         mainContainer.visible = true;
         mainContainer.enabledSelf = true;
+        mainContainer.style.display = DisplayStyle.Flex;
         // MainMenu.mainMenu.Hide();
         // MonoBehaviourSingleton<UIManager>.Instance.ShowMouse();
     }
@@ -26,8 +28,10 @@ public static class MainMenuQuickChatSettings
         if (rootContainer == null) Create();
         mainContainer.visible = false;
         mainContainer.enabledSelf = false;
+        mainContainer.style.display = DisplayStyle.None;
         rootContainer.visible = false;
         rootContainer.enabledSelf = false;
+        rootContainer.style.display = DisplayStyle.None;
         // MainMenu.mainMenu.Show();
     }
 
