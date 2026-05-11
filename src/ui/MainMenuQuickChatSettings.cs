@@ -38,9 +38,12 @@ public static class MainMenuQuickChatSettings
     public static void Create()
     {
         VisualElement root = new VisualElement(); // used to position the menu on the screen
+        root.style.position = Position.Absolute;
+        root.style.left = 0;
+        root.style.top = 0;
+        root.style.right = 0;
+        root.style.bottom = 0;
         root.style.flexDirection = FlexDirection.Row;
-        root.style.height = new StyleLength(Length.Percent(100));
-        root.style.width = new StyleLength(Length.Percent(100));
         root.style.alignItems = Align.Center;
         root.style.justifyContent = Justify.Center;
         VisualElement overallContainer = new VisualElement();
@@ -149,7 +152,7 @@ public static class MainMenuQuickChatSettings
 
         Label suggestionsNote =
             new Label("Have any suggestions?  Join Toaster's Rink - Puck Modding Discord http://discord.puckstats.io/");
-        suggestionsNote.style.fontSize = 14;
+        suggestionsNote.style.fontSize = 22;
         suggestionsNote.style.color = Color.white;
         suggestionsNote.style.marginTop = 10;
         suggestionsNote.style.unityTextAlign = TextAnchor.MiddleCenter;
@@ -193,6 +196,9 @@ public static class MainMenuQuickChatSettings
         quickChatDropdownField.style.width = 500;
         quickChatDropdownField.style.marginRight = 10;
         quickChatDropdownField.style.overflow = Overflow.Hidden;
+        quickChatDropdownField.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f));
+        quickChatDropdownField.style.color = Color.white;
+        StyleDropdownArrow(quickChatDropdownField);
         quickChatDropdownField.RegisterCallback<ChangeEvent<string>>(
             new EventCallback<ChangeEvent<string>>(evt =>
             {
@@ -208,6 +214,9 @@ public static class MainMenuQuickChatSettings
         visibilityDropdownField.style.minWidth = 140;
         visibilityDropdownField.style.maxWidth = 140;
         visibilityDropdownField.style.width = 140;
+        visibilityDropdownField.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f));
+        visibilityDropdownField.style.color = Color.white;
+        StyleDropdownArrow(visibilityDropdownField);
         visibilityDropdownField.RegisterCallback<ChangeEvent<string>>(
             new EventCallback<ChangeEvent<string>>(evt =>
             {
@@ -227,5 +236,30 @@ public static class MainMenuQuickChatSettings
         rowContainer.Add(quickChatDropdownField);
         rowContainer.Add(visibilityDropdownField);
         return rowContainer;
+    }
+
+    static void StyleDropdownArrow(DropdownField dropdown)
+    {
+        dropdown.RegisterCallback<AttachToPanelEvent>(evt =>
+        {
+            var input = dropdown.Q(className: "unity-base-popup-field__input");
+            if (input == null) return;
+
+            input.style.flexDirection = FlexDirection.Row;
+            input.style.justifyContent = Justify.SpaceBetween;
+            input.style.alignItems = Align.Center;
+
+            Label arrow = new Label("▼");
+            arrow.style.color = Color.white;
+            arrow.style.fontSize = 18;
+            arrow.style.marginLeft = 4;
+            arrow.style.marginRight = 8;
+            arrow.style.unityTextAlign = TextAnchor.MiddleCenter;
+            arrow.style.paddingBottom = 0;
+            arrow.style.paddingTop = 0;
+            arrow.pickingMode = PickingMode.Ignore; // clicks pass through to the dropdown
+            input.Add(arrow);
+        });
+
     }
 }

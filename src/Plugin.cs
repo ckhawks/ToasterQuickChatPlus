@@ -8,7 +8,7 @@ using UnityEngine.Rendering;
 
 namespace ToasterQuickChatPlus;
 
-public class Plugin : IPuckMod
+public class Plugin : IPuckPlugin
 {
     public static string MOD_NAME = "ToasterQuickChatPlus";
     public static string MOD_VERSION = "1.0.0";
@@ -18,7 +18,6 @@ public class Plugin : IPuckMod
 
     public static ModSettings modSettings;
     
-    public static InputAction quickchat5Action;
     public static InputAction quickchat6Action;
     public static InputAction quickchat7Action;
     public static InputAction quickchat8Action;
@@ -46,9 +45,7 @@ public class Plugin : IPuckMod
                 Plugin.Log($"All patched! Patched methods:");
                 LogAllPatchedMethods();
                 
-                // register keybinds
-                quickchat5Action = new InputAction(binding: modSettings.BindingQuickchat5);
-                quickchat5Action.Enable();
+                // register keybinds (key 5 is now vanilla QuickChat5)
                 quickchat6Action = new InputAction(binding: modSettings.BindingQuickchat6);
                 quickchat6Action.Enable();
                 quickchat7Action = new InputAction(binding: modSettings.BindingQuickchat7);

@@ -110,14 +110,18 @@ public static class QuickChats
             { 100, "My bad..." },
             { 101, "I love puckstats.io!" },
             { 102, "Please be nice." },
-            { 103, "Wowza!" }
+            { 103, "Wowza!" },
+            { 104, "❤️" },
+            { 105, "😭" },
+            { 106, "🔥" },
+            { 107, "💯" }
         };
 
-    // Returns QuickChat objects sorted by their text, alphabetically
-    public static List<QuickChat> GetQuickChatsAlphabetical()
+    // Returns QuickChatEntry objects sorted by their text, alphabetically
+    public static List<QuickChatEntry> GetQuickChatsAlphabetical()
     {
         return quickchats
-            .Select(kv => new QuickChat
+            .Select(kv => new QuickChatEntry
             {
                 id = kv.Key,
                 quickchat = kv.Value
@@ -134,8 +138,8 @@ public static class QuickChats
             .ToList();
     }
 
-    // Finds a QuickChat by its text; returns null if not found
-    public static QuickChat GetQuickChatByName(string name)
+    // Finds a QuickChatEntry by its text; returns null if not found
+    public static QuickChatEntry GetQuickChatByName(string name)
     {
         if (string.IsNullOrEmpty(name))
             return null;
@@ -149,20 +153,20 @@ public static class QuickChats
         if (kv.Value == null)
             return null;
 
-        return new QuickChat
+        return new QuickChatEntry
         {
             id = kv.Key,
             quickchat = kv.Value
         };
     }
-    
-    public static QuickChat GetQuickChatByID(int id)
+
+    public static QuickChatEntry GetQuickChatByID(int id)
     {
         // Try to find the first matching entry
         var kv = quickchats
             .FirstOrDefault(pair => pair.Key == id);
 
-        return new QuickChat
+        return new QuickChatEntry
         {
             id = kv.Key,
             quickchat = kv.Value
@@ -170,7 +174,7 @@ public static class QuickChats
     }
 }
 
-public class QuickChat
+public class QuickChatEntry
 {
     public string quickchat = "";
     public int id = 0;

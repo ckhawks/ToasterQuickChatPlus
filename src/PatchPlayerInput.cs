@@ -1,65 +1,67 @@
-﻿using HarmonyLib;
+using HarmonyLib;
+using UnityEngine.InputSystem;
 
 namespace ToasterQuickChatPlus;
 
 public static class PatchPlayerInput
 {
-    // static readonly FieldInfo _isFocusedField = typeof(UIComponent)
-    //     .GetField("IsFocused", 
-    //         BindingFlags.Instance | BindingFlags.NonPublic);    
-    //
     [HarmonyPatch(typeof(PlayerInput), "Update")]
     class PatchPlayerInputUpdate
     {
         [HarmonyPostfix]
         static void Postfix(PlayerInput __instance)
         {
-            // Plugin.Log($"PlayerInput update1");
-            UIChat chat = UIChat.Instance;
-            // Plugin.Log($"PlayerInput update2");
-            // bool chatIsFocused = (bool) _isFocusedField.GetValue(chat);
-            // Plugin.Log($"PlayerInput update3");
-            // do not use the actions if chat is open
+            UIChat chat = MonoBehaviourSingleton<UIManager>.Instance.Chat;
             if (chat.IsFocused) return;
-            // Plugin.Log($"PlayerInput update4");
 
-            if (Plugin.quickchat5Action.WasPressedThisFrame())
-            {
-                Plugin.Log($"Pressed 5");
-                chat.OpenQuickChat(4);
-            }
-            
             if (Plugin.quickchat6Action.WasPressedThisFrame())
             {
                 Plugin.Log($"Pressed 6");
-                chat.OpenQuickChat(5);
+                NetworkBehaviourSingleton<ChatManager>.Instance.Client_QuickChatAction(5);
             }
-            
+
             if (Plugin.quickchat7Action.WasPressedThisFrame())
             {
-                chat.OpenQuickChat(6);
+                NetworkBehaviourSingleton<ChatManager>.Instance.Client_QuickChatAction(6);
             }
-            
+
             if (Plugin.quickchat8Action.WasPressedThisFrame())
             {
-                chat.OpenQuickChat(7);
+                NetworkBehaviourSingleton<ChatManager>.Instance.Client_QuickChatAction(7);
             }
-            
+
             if (Plugin.quickchat9Action.WasPressedThisFrame())
             {
-                chat.OpenQuickChat(8);
+                NetworkBehaviourSingleton<ChatManager>.Instance.Client_QuickChatAction(8);
             }
-            
+
             if (Plugin.quickchat0Action.WasPressedThisFrame())
             {
-                chat.OpenQuickChat(9);
+                NetworkBehaviourSingleton<ChatManager>.Instance.Client_QuickChatAction(9);
             }
-            
-            if (Plugin.quickchatCloseAction.WasPressedThisFrame() && chat.IsQuickChatOpen)
+
+            if (Plugin.quickchatCloseAction.WasPressedThisFrame() && QuickChatPatch.IsQuickChatEnabled())
             {
                 Plugin.Log($"Pressed close");
-                chat.CloseQuickChat();
+                NetworkBehaviourSingleton<ChatManager>.Instance.SetQuickChatEnabled(false, null);
             }
+        }
+    }
+
+    // Suppress pause menu from opening when ESC is used to close the quickchat menu
+    [HarmonyPatch(typeof(UIManager), "OnPauseActionPerformed")]
+    class PatchUIManagerPause
+    {
+        [HarmonyPrefix]
+        static bool Prefix(InputAction.CallbackContext context)
+        {
+            if (QuickChatPatch.IsQuickChatEnabled())
+            {
+                // Quickchat is open — close it and block the pause menu
+                NetworkBehaviourSingleton<ChatManager>.Instance.SetQuickChatEnabled(false, null);
+                return false;
+            }
+            return true;
         }
     }
 }
