@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using HarmonyLib;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace ToasterQuickChatPlus.ui;
@@ -115,7 +117,7 @@ public static class MainMenuQuickChatSettings
             // Plugin.Log.LogInfo("QCP Close Button Clicked!");
             // MainMenuQuickChatSettings.Show();
             Hide();
-            // Application.OpenURL("http://discord.puckstats.io");
+            // Application.OpenURL("https://discord.gg/mCmX5dwzsj");
         }
         
         ScrollView quickChatsScrollView = new ScrollView();
@@ -151,7 +153,7 @@ public static class MainMenuQuickChatSettings
         contentContainer.Add(bottomRow);
 
         Label suggestionsNote =
-            new Label("Have any suggestions?  Join Toaster's Rink - Puck Modding Discord http://discord.puckstats.io/");
+            new Label("Have any suggestions?  Join Toaster's Rink - Puck Modding Discord https://discord.gg/mCmX5dwzsj");
         suggestionsNote.style.fontSize = 22;
         suggestionsNote.style.color = Color.white;
         suggestionsNote.style.marginTop = 10;
@@ -236,6 +238,25 @@ public static class MainMenuQuickChatSettings
         rowContainer.Add(quickChatDropdownField);
         rowContainer.Add(visibilityDropdownField);
         return rowContainer;
+    }
+
+    // Make it so that if Quick Chat settings menu is open, pressing Escape closes it
+    [HarmonyPatch(typeof(UIManager), "OnPauseActionPerformed")]
+    private static class UIManagerOnPauseActionPerformedPatch
+    {
+        [HarmonyPrefix]
+        static bool Prefix(UIManager __instance, InputAction.CallbackContext context)
+        {
+            if (rootContainer == null) return true;
+
+            if (rootContainer.visible || rootContainer.enabledSelf || rootContainer.style.display == DisplayStyle.Flex)
+            {
+                Hide();
+                return false;
+            }
+
+            return true;
+        }
     }
 
     static void StyleDropdownArrow(DropdownField dropdown)

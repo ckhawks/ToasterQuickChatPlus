@@ -25,7 +25,7 @@ public static class QuickChats
             { 15, "Sorry!" },
             { 16, "vpas" },
             { 17, "I love Toaster's mods!" },
-            { 18, "Join the Puck Modding Discord: http://discord.puckstats.io" },
+            { 18, "Join the Puck Modding Discord: https://discord.gg/mCmX5dwzsj" },
             { 19, "Calculated." },
             { 20, "Faking..." },
             { 21, "Nice moves!" },
