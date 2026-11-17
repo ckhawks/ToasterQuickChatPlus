@@ -19,6 +19,9 @@ public class ModSettings
     {
         public int index { get; set; } = 0;
         public int visibility { get; set; } = 0;
+        // puckstats emote id when the slot sends an emote instead of a quick chat; needs
+        // Toaster's Reskin Loader. Ids survive renames, so the name is looked up at send time.
+        public string emote { get; set; } = null;
     }
 
     static string ConfigurationFileName = $"{Plugin.MOD_NAME}.json";

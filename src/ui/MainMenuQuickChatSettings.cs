@@ -11,6 +11,59 @@ public static class MainMenuQuickChatSettings
 {
     public static VisualElement rootContainer;
     public static VisualElement mainContainer;
+    static VisualElement rowsContainer;
+
+    static readonly List<string> visibilityOptions = new List<string> { "ALL", "TEAM" };
+
+    // What a dropdown choice stands for: a puckstats emote id, or a quick chat library id.
+    struct Choice
+    {
+        public string emoteId;
+        public int quickChatId;
+    }
+
+    // For each config entry (keys 1-0, 4 chat options per key -> 40 entries).
+    static void BuildRows()
+    {
+        if (rowsContainer == null) return;
+        rowsContainer.Clear();
+
+        string emoteNote;
+        switch (TrlEmotes.Current)
+        {
+            case TrlEmotes.State.Ready:
+                emoteNote = "Your emotes from Toaster's Reskin Loader are at the top of each list. Set them up at puckstats.io/emotes.";
+                break;
+            case TrlEmotes.State.Outdated:
+                emoteNote = "Update Toaster's Reskin Loader to put your emotes in quick chat.";
+                break;
+            default:
+                emoteNote = "Also supports emotes: install Toaster's Reskin Loader to bind your puckstats.io emotes to quick chat slots.";
+                break;
+        }
+        Label hint = new Label(emoteNote);
+        hint.style.fontSize = 16;
+        hint.style.color = new Color(0.8f, 0.8f, 0.8f);
+        hint.style.marginTop = 8;
+        hint.style.whiteSpace = WhiteSpace.Normal;
+        rowsContainer.Add(hint);
+
+        // Your emotes first, shown as image + :name:, then the quick chat library.
+        var myEmotes = new List<(string id, string label)>();
+        foreach (string id in TrlEmotes.MyEmoteIds())
+        {
+            string name = TrlEmotes.NameFor(id);
+            if (name == null) continue;
+            string image = TrlEmotes.ImageTagFor(id);
+            myEmotes.Add((id, image == null ? $":{name}:" : $"{image} :{name}:"));
+        }
+        List<QuickChatEntry> library = QuickChats.GetQuickChatsAlphabetical();
+
+        for (int i = 0; i < 40; i++)
+        {
+            rowsContainer.Add(CreateQuickChatRow(i, myEmotes, library));
+        }
+    }
     
     public static void Show()
     {
@@ -129,25 +182,16 @@ public static class MainMenuQuickChatSettings
         controlsSectionTitle.style.fontSize = 20;
         controlsSectionTitle.style.color = Color.white;
         
-        List<string> quickChatsSortedAsStrings = QuickChats.GetQuickChatsAlphabeticalAsStrings();
-        List<string> visibilityOptions = new List<string>();
-        visibilityOptions.Add("ALL");
-        visibilityOptions.Add("TEAM");
         
         // quickChatsScrollView.Add(controlsSectionTitle);
         // quickChatsScrollView.Add(quickChatsSectionTitle);
         
-        // for each config entry (keys 1-0, 4 chat options per key -> 40 entries)
-        for (int i = 0; i < 40; i++)
-        {
-            quickChatsScrollView.Add(CreateQuickChatRow(
-                i, 
-                quickChatsSortedAsStrings, 
-                quickChatsSortedAsStrings.IndexOf(QuickChats.quickchats[Plugin.modSettings.quickChatSettings[i].index]),
-                visibilityOptions, 
-                Plugin.modSettings.quickChatSettings[i].visibility
-            ));
-        }
+        rowsContainer = new VisualElement();
+        quickChatsScrollView.Add(rowsContainer);
+        BuildRows();
+        // Emote names and images arrive (and change) after the menu is built.
+        TrlEmotes.Changed -= BuildRows;
+        TrlEmotes.Changed += BuildRows;
         contentContainer.Add(quickChatsScrollView);
         bottomRow.Add(closeButton);
         contentContainer.Add(bottomRow);
@@ -172,8 +216,33 @@ public static class MainMenuQuickChatSettings
     // slotIndex = used to know which config slot that should be modified
     // index = used to know which name in the sorted list of messages should be selected
     // 
-    public static VisualElement CreateQuickChatRow(int slotIndex, List<string> quickChatsSortedAsStrings, int selectedIndexFromSorted, List<string> visibilityOptions, int selectedVisibility)
+    public static VisualElement CreateQuickChatRow(int slotIndex, List<(string id, string label)> myEmotes, List<QuickChatEntry> library)
     {
+        var settings = Plugin.modSettings.quickChatSettings[slotIndex];
+        int selectedVisibility = settings.visibility;
+        var choices = new List<string>();
+        var choiceMap = new Dictionary<string, Choice>();
+        string selected = null;
+        // An emote that left your set (or with TRL gone) stays put but shows as missing.
+        if (!string.IsNullOrEmpty(settings.emote) && !myEmotes.Exists(e => e.id == settings.emote))
+        {
+            choices.Add(QuickChatPatch.MISSING_EMOTE);
+            choiceMap[QuickChatPatch.MISSING_EMOTE] = new Choice { emoteId = settings.emote };
+            selected = QuickChatPatch.MISSING_EMOTE;
+        }
+        foreach (var emote in myEmotes)
+        {
+            choices.Add(emote.label);
+            choiceMap[emote.label] = new Choice { emoteId = emote.id };
+            if (emote.id == settings.emote) selected = emote.label;
+        }
+        foreach (QuickChatEntry entry in library)
+        {
+            choices.Add(entry.quickchat);
+            choiceMap[entry.quickchat] = new Choice { quickChatId = entry.id };
+            if (selected == null && string.IsNullOrEmpty(settings.emote) && entry.id == settings.index) selected = entry.quickchat;
+        }
+
         // TODO add event handling for modifying to update the config
         VisualElement rowContainer = new VisualElement();
         rowContainer.style.backgroundColor = new StyleColor(new Color(0.25f, 0.25f, 0.25f));
@@ -191,8 +260,8 @@ public static class MainMenuQuickChatSettings
         quickChatLabel.style.unityTextAlign = TextAnchor.MiddleLeft;
         quickChatLabel.style.marginRight = 10;
         DropdownField quickChatDropdownField = new DropdownField();
-        quickChatDropdownField.choices = quickChatsSortedAsStrings;
-        quickChatDropdownField.index = selectedIndexFromSorted;
+        quickChatDropdownField.choices = choices;
+        quickChatDropdownField.index = selected == null ? -1 : choices.IndexOf(selected);
         quickChatDropdownField.style.minWidth = 500;
         quickChatDropdownField.style.maxWidth = 500;
         quickChatDropdownField.style.width = 500;
@@ -205,7 +274,16 @@ public static class MainMenuQuickChatSettings
             new EventCallback<ChangeEvent<string>>(evt =>
             {
                 // Plugin.Log.LogInfo($"Changed on slot index {slotIndex} from {evt.previousValue} to {evt.newValue}");
-                Plugin.modSettings.quickChatSettings[slotIndex].index = QuickChats.GetQuickChatByName(evt.newValue).id;
+                if (!choiceMap.TryGetValue(evt.newValue, out Choice choice)) return;
+                if (choice.emoteId != null)
+                {
+                    Plugin.modSettings.quickChatSettings[slotIndex].emote = choice.emoteId;
+                }
+                else
+                {
+                    Plugin.modSettings.quickChatSettings[slotIndex].emote = null;
+                    Plugin.modSettings.quickChatSettings[slotIndex].index = choice.quickChatId;
+                }
                 QuickChatPatch.UpdateMessagesInUIChat();
                 Plugin.modSettings.Save();
             })

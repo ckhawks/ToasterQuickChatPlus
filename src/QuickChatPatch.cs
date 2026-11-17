@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using AYellowpaper.SerializedCollections;
@@ -37,6 +37,11 @@ public static class QuickChatPatch
     // Track the currently open menu index (mod-level, since we may use indices beyond the enum)
     static int currentMenuIndex = -1;
 
+    // Per slot of the open menu: false for an emote slot whose emote is gone, which sends nothing.
+    static bool[] currentSendable = new bool[0];
+
+    public const string MISSING_EMOTE = "(missing emote)";
+
     [HarmonyPatch(typeof(ChatManager), nameof(ChatManager.Client_QuickChatAction))]
     public static class ChatManagerQuickChatActionPatch
     {
@@ -59,6 +64,10 @@ public static class QuickChatPatch
                 {
                     return false;
                 }
+                if (index >= currentSendable.Length || !currentSendable[index])
+                {
+                    return false;
+                }
 
                 QuickChat quickChat = messages[index];
                 SetQuickChatDisabled(__instance);
@@ -74,6 +83,8 @@ public static class QuickChatPatch
                 }
 
                 currentMenuIndex = index;
+                // Rebuilt on every open so emote slots pick up renames and set changes.
+                modQuickChats[index] = BuildMenu(index, out currentSendable);
                 _isQuickChatEnabledField.SetValue(__instance, true);
 
                 // Use a valid enum value for the field so the game doesn't break
@@ -109,6 +120,7 @@ public static class QuickChatPatch
         _isQuickChatEnabledField.SetValue(chatManager, false);
         _quickChatCategoryField.SetValue(chatManager, null);
         currentMenuIndex = -1;
+        currentSendable = new bool[0];
 
         Tween existingTween = (Tween)_quickChatTimeoutTweenField.GetValue(chatManager);
         if (existingTween != null)
@@ -132,21 +144,7 @@ public static class QuickChatPatch
 
         for (int menuIndex = 0; menuIndex < 10; menuIndex++)
         {
-            int slotsPerMenu = 4;
-            QuickChat[] messages = new QuickChat[slotsPerMenu];
-
-            for (int slot = 0; slot < slotsPerMenu; slot++)
-            {
-                int settingsIndex = menuIndex * slotsPerMenu + slot;
-                var settings = Plugin.modSettings.quickChatSettings[settingsIndex];
-                messages[slot] = new QuickChat
-                {
-                    Content = QuickChats.GetQuickChatByID(settings.index).quickchat,
-                    IsTeamChat = settings.visibility == 1
-                };
-            }
-
-            modQuickChats[menuIndex] = messages;
+            modQuickChats[menuIndex] = BuildMenu(menuIndex, out _);
         }
 
         // Also update the ChatManager's quickChats dictionary for vanilla categories (0-4)
@@ -163,6 +161,39 @@ public static class QuickChatPatch
             }
             _quickChatsField.SetValue(chatManager, quickChats);
         }
+    }
+
+    const int SLOTS_PER_MENU = 4;
+
+    // The menu's messages from settings. An emote slot sends ":name:" with the emote's current
+    // name; when the emote left the player's set (or TRL is missing) it shows MISSING_EMOTE and
+    // is not sendable.
+    static QuickChat[] BuildMenu(int menuIndex, out bool[] sendable)
+    {
+        QuickChat[] messages = new QuickChat[SLOTS_PER_MENU];
+        sendable = new bool[SLOTS_PER_MENU];
+        for (int slot = 0; slot < SLOTS_PER_MENU; slot++)
+        {
+            var settings = Plugin.modSettings.quickChatSettings[menuIndex * SLOTS_PER_MENU + slot];
+            string content;
+            if (string.IsNullOrEmpty(settings.emote))
+            {
+                content = QuickChats.GetQuickChatByID(settings.index).quickchat;
+                sendable[slot] = true;
+            }
+            else
+            {
+                string name = TrlEmotes.NameFor(settings.emote);
+                content = name == null ? MISSING_EMOTE : ":" + name + ":";
+                sendable[slot] = name != null;
+            }
+            messages[slot] = new QuickChat
+            {
+                Content = content,
+                IsTeamChat = settings.visibility == 1
+            };
+        }
+        return messages;
     }
 
     [HarmonyPatch(typeof(UIChat), nameof(UIChat.ShowQuickChat))]
